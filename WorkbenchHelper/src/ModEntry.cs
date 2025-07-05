@@ -127,6 +127,7 @@ namespace WorkbenchHelper
                 var page = Game1.activeClickableMenu as CraftingPage;
                 if (page is CraftingPage)
                 {
+                    Monitor.Log($"CraftingPage found: {page.GetType().Name}");
                     return page;
                 }
             }
@@ -162,6 +163,7 @@ namespace WorkbenchHelper
         {
             if (!Context.IsWorldReady) return;
             var page = ReturnCraftingPage();
+            Monitor.Log($"Button pressed: {e.Button}");
             if (page != null)
                 if (e.Button == SButton.MouseLeft || e.Button == SButton.ControllerA || e.Button == SButton.C)
                     handler.HandleClick(e.Cursor);
@@ -172,6 +174,7 @@ namespace WorkbenchHelper
         /// <param name="e">The event data.</param>
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
+            Monitor.Log($"RenderedActiveMenu: {Game1.activeClickableMenu?.GetType().Name}");
             if (!Context.IsWorldReady) return;
 
             if (ReturnCraftingPage() != null)
