@@ -1,4 +1,4 @@
-﻿using WorkbenchHelper.AddToFridges;
+﻿using WorkbenchHelper.AddToWorkbenchChests;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
@@ -14,12 +14,10 @@ namespace WorkbenchHelper
     /// <summary>The mod entry point.</summary>
     public class ModEntry : Mod
     {
-        private AddToFridgesHandler handler;
+        private AddToWorkbenchChestsHandler handler;
         internal IModHelper helper;
 
-        private bool expandedFridgeLoaded = false;
-
-        private const string EXPANDED_FRIDGE_ID = "Uwazouri.ExpandedFridge";
+        private const string EXPANDED_WORKBENCH_ID = "shonas.WorkbenchHelper";
 
         /*********
         ** Public methods
@@ -34,7 +32,7 @@ namespace WorkbenchHelper
 
             // Instantiation of Handler and Helper Objects
             this.helper = helper;
-            this.handler = new AddToFridgesHandler(this, button, buttonDisabled);
+            this.handler = new AddToWorkbenchChestsHandler(this, button, buttonDisabled);
 
             AddEvents(helper);
         }
@@ -48,7 +46,6 @@ namespace WorkbenchHelper
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         private void AddEvents(IModHelper helper)
         {
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
             helper.Events.Input.ButtonPressed += OnButtonPressed;
             helper.Events.Input.CursorMoved += OnCursorMoved;
@@ -84,22 +81,6 @@ namespace WorkbenchHelper
                 }
             }
 
-            // Failsafe
-            if (otherModInfo == null)
-            {
-                Monitor.Log($"Something went wrong in getting the mod info for " + uniqueID + "; Chef Helper - Add to Fridges will continue as if mod does not exist.", LogLevel.Warn);
-
-                switch (uniqueID)
-                {
-                    case EXPANDED_FRIDGE_ID:
-                        expandedFridgeLoaded = false;
-                        break;
-                    default:
-                        break;
-                }
-
-                return;
-            }
 
 
             /**************************************************
@@ -123,24 +104,6 @@ namespace WorkbenchHelper
                     break;
                 }
             }
-
-            // If we didn't get the assembly, then it doesn't exist for some reason
-            //    or we were looking for the wrong name
-            if (otherModAssembly == null)
-            {
-                Monitor.Log($"Something went wrong in getting the mod assembly for " + uniqueID + "; Chef Helper - Add to Fridges will continue as if mod does not exist.", LogLevel.Warn);
-
-                switch (uniqueID)
-                {
-                    case EXPANDED_FRIDGE_ID:
-                        expandedFridgeLoaded = false;
-                        break;
-                    default:
-                        break;
-                }
-
-                return;
-            }
         }
 
 
@@ -151,48 +114,20 @@ namespace WorkbenchHelper
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             // Compatibility Check
-            expandedFridgeLoaded = helper.ModRegistry.IsLoaded(EXPANDED_FRIDGE_ID);
 
-            if (expandedFridgeLoaded)
-                getModAssembly(EXPANDED_FRIDGE_ID);
+            getModAssembly(EXPANDED_WORKBENCH_ID);
         }
 
 
-        /// <summary>
-        /// Returns the instance of the Item Grab Menu if it's from a fridge.
-        /// </summary>
-        /// <returns></returns>
-        internal MenuWithInventory ReturnFridgeMenu()
-        {
-            if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is MenuWithInventory)
-            {
-                var menu = Game1.activeClickableMenu as MenuWithInventory;
-                ItemGrabMenu itemGrabMenu;
-                if (menu is ItemGrabMenu)
-                {
-                    itemGrabMenu = menu as ItemGrabMenu;
-                    if (itemGrabMenu.behaviorOnItemGrab?.Target is Chest chest && chest.fridge.Value)
-                        return menu;
-                }
-
-                if (expandedFridgeLoaded)
-                {
-                    if (menu.GetType().FullName == "ExpandedFridge.ExpandedFridgeMenu")
-                        return menu;
-                }
-            }
-
-            return null;
-        }
 
         internal CraftingPage ReturnCraftingPage()
         {
             if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is CraftingPage)
             {
                 var page = Game1.activeClickableMenu as CraftingPage;
-                if (menu is CraftingPage)
+                if (page is CraftingPage)
                 {
-                    return CraftingPage;
+                    return page;
                 }
             }
 
@@ -244,7 +179,7 @@ namespace WorkbenchHelper
                 handler.currentLocation = Game1.player.currentLocation;
                 handler.DrawButton();
 
-                if (!(ReturnFridgeMenu() is ItemGrabMenu))
+                if (!(ReturnCraftingPage() is CraftingPage))
                 {
                     handler.DrawTransferredItems(e.SpriteBatch);
                 }
