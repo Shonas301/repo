@@ -1,0 +1,10 @@
+﻿{
+  "Name": "Workbench Helper - Add to all stacks in Workbench",
+  "Author": "shonas301",
+  "Version": "1.0.0",
+  "Description": "Like add to existing stacks, but with all your fridges!",
+  "UniqueID": "shonas301.WorkbenchHelper",
+  "EntryDll": "WorkbenchHelper.dll",
+  "MinimumApiVersion": "4.1.10",
+  "UpdateKeys": []
+}
