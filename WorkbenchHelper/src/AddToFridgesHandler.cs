@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using static StardewValley.Menus.ItemGrabMenu;
 
-namespace ChefHelperAddToFridges.AddToFridges
+namespace WorkbenchHelper.AddToFridges
 {
     class AddToFridgesHandler
     {
@@ -164,9 +164,10 @@ namespace ChefHelperAddToFridges.AddToFridges
             var inventory = modEntry.ReturnFridgeMenu().inventory;
 
             // Goes through each item in the chest
-            for (int i = 0; i < chest.items.Count; i++)
+            // for (int i = 0; i < chest.netItems.Count; i++)
+            foreach (Item chest_item in chest?.GetItemsForPlayer(Game1.player.UniqueMultiplayerID))
             {
-                Item chest_item = chest.items[i];
+                // Item chest_item = chest.netItems[i];
                 // If there's no item in the slot, or the item cannot be stacked (such as weapons), move on
                 if (chest_item == null || chest_item.maximumStackSize() <= 1)
                 {
@@ -190,7 +191,9 @@ namespace ChefHelperAddToFridges.AddToFridges
                         TransferredItemSprite item_sprite = new TransferredItemSprite(inventory_item.getOne(), inventory.inventory[j].bounds.X, inventory.inventory[j].bounds.Y);
                         var transferredItemSprites = modEntry.helper.Reflection.GetField<List<TransferredItemSprite>>(menu, "_transferredItemSprites").GetValue();
                         transferredItemSprites.Add(item_sprite);
-                    } else { 
+                    }
+                    else
+                    {
                         TransferredItemSprite item_sprite = new TransferredItemSprite(inventory_item.getOne(), inventory.inventory[j].bounds.X, inventory.inventory[j].bounds.Y);
                         //modEntry.Monitor.Log($"Added {item_sprite.item.DisplayName}");
                         transferredItemSprites.Add(item_sprite);
@@ -214,7 +217,7 @@ namespace ChefHelperAddToFridges.AddToFridges
                     {
                         Item overflow_stack = null;
                         // If so, is there still space left in the chest for it?
-                        if (!Utility.canItemBeAddedToThisInventoryList(chest_item.getOne(), chest.items, Chest.capacity))
+                        if (!Utility.canItemBeAddedToThisInventoryList(chest_item.getOne(), chest.netItems, Chest.capacity))
                         {
                             break;
                         }
@@ -308,7 +311,8 @@ namespace ChefHelperAddToFridges.AddToFridges
         private void FillFridges()
         {
             // Fill main fridge first
-            if (currentLocation is StardewValley.Locations.FarmHouse) {
+            if (currentLocation is StardewValley.Locations.FarmHouse)
+            {
                 var farmHouse = currentLocation as StardewValley.Locations.FarmHouse;
 
                 // If it's an Expanded Fridge, we need to treat it specially...
@@ -320,18 +324,21 @@ namespace ChefHelperAddToFridges.AddToFridges
                     foreach (Chest chest in hubChests)
                         FillOutStacks(chest);
 
-                // Here we just fill out a regular fridge, which doesn't get stored
-                // in objects for the Game Location for whatever reason.
-                } else if (farmHouse.fridge.Value != null)
+                    // Here we just fill out a regular fridge, which doesn't get stored
+                    // in objects for the Game Location for whatever reason.
+                }
+                else if (farmHouse.fridge.Value != null)
                     FillOutStacks(farmHouse.fridge.Value);
             }
 
             // Then fill all mini-fridges
             foreach (StardewValley.Object item in currentLocation.objects.Values)
             {
-                if (item != null && item is Chest) {
+                if (item != null && item is Chest)
+                {
                     var chest = item as Chest;
-                    if (chest.fridge.Value) {
+                    if (chest.fridge.Value)
+                    {
                         FillOutStacks(chest);
                     }
                 }
@@ -349,7 +356,8 @@ namespace ChefHelperAddToFridges.AddToFridges
 
             if (!button.containsPoint((int)screenPixels.X, (int)screenPixels.Y)) return;
 
-            if (FridgesAreFree()) { 
+            if (FridgesAreFree())
+            {
                 Game1.playSound("Ship");
 
                 FillFridges();

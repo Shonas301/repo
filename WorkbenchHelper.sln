@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkBenchHelper", "WorkBenchHelper\WorkBenchHelper.csproj", "{E04E7ECA-9EC9-4ED2-B4BB-036A450A0252}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkbenchHelper", "WorkbenchHelper\WorkbenchHelper.csproj", "{DC94EE10-C0A5-4D0E-85B2-646A1CE9A1EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +14,10 @@ Global
 		{E04E7ECA-9EC9-4ED2-B4BB-036A450A0252}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{E04E7ECA-9EC9-4ED2-B4BB-036A450A0252}.Debug|Any CPU.Build.0 = Debug|x86
 		{E04E7ECA-9EC9-4ED2-B4BB-036A450A0252}.Release|Any CPU.ActiveCfg = Release|x86
+		{DC94EE10-C0A5-4D0E-85B2-646A1CE9A1EB}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DC94EE10-C0A5-4D0E-85B2-646A1CE9A1EB}.Debug|Any CPU.Build.0 = Debug|x86
+		{DC94EE10-C0A5-4D0E-85B2-646A1CE9A1EB}.Release|Any CPU.ActiveCfg = Release|x86
+		{DC94EE10-C0A5-4D0E-85B2-646A1CE9A1EB}.Release|Any CPU.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

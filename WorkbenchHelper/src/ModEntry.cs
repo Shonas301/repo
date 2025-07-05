@@ -1,4 +1,4 @@
-﻿using ChefHelperAddToFridges.AddToFridges;
+﻿using WorkbenchHelper.AddToFridges;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
@@ -9,7 +9,7 @@ using StardewValley.Objects;
 using System;
 using System.Reflection;
 
-namespace ChefHelperAddToFridges
+namespace WorkbenchHelper
 {
     /// <summary>The mod entry point.</summary>
     public class ModEntry : Mod
@@ -29,8 +29,8 @@ namespace ChefHelperAddToFridges
         public override void Entry(IModHelper helper)
         {
             // Assets
-            var button = helper.Content.Load<Texture2D>("assets/button.png");
-            var buttonDisabled = helper.Content.Load<Texture2D>("assets/button_disabled.png");
+            var button = helper.ModContent.Load<Texture2D>("assets/button.png");
+            var buttonDisabled = helper.ModContent.Load<Texture2D>("assets/button_disabled.png");
 
             // Instantiation of Handler and Helper Objects
             this.helper = helper;
@@ -63,7 +63,8 @@ namespace ChefHelperAddToFridges
         *    3. Start using classes from the mod's assembly. Be cautious that the mod may not exist
         */
 
-        private void getModAssembly(string uniqueID) {
+        private void getModAssembly(string uniqueID)
+        {
             /**************************************************
             *              STEP 1
             **************************************************/
@@ -84,7 +85,8 @@ namespace ChefHelperAddToFridges
             }
 
             // Failsafe
-            if (otherModInfo == null) { 
+            if (otherModInfo == null)
+            {
                 Monitor.Log($"Something went wrong in getting the mod info for " + uniqueID + "; Chef Helper - Add to Fridges will continue as if mod does not exist.", LogLevel.Warn);
 
                 switch (uniqueID)
@@ -124,7 +126,8 @@ namespace ChefHelperAddToFridges
 
             // If we didn't get the assembly, then it doesn't exist for some reason
             //    or we were looking for the wrong name
-            if (otherModAssembly == null) {
+            if (otherModAssembly == null)
+            {
                 Monitor.Log($"Something went wrong in getting the mod assembly for " + uniqueID + "; Chef Helper - Add to Fridges will continue as if mod does not exist.", LogLevel.Warn);
 
                 switch (uniqueID)
@@ -165,7 +168,8 @@ namespace ChefHelperAddToFridges
             {
                 var menu = Game1.activeClickableMenu as MenuWithInventory;
                 ItemGrabMenu itemGrabMenu;
-                if (menu is ItemGrabMenu) { 
+                if (menu is ItemGrabMenu)
+                {
                     itemGrabMenu = menu as ItemGrabMenu;
                     if (itemGrabMenu.behaviorOnItemGrab?.Target is Chest chest && chest.fridge.Value)
                         return menu;
@@ -181,14 +185,25 @@ namespace ChefHelperAddToFridges
             return null;
         }
 
+        internal CraftingPage ReturnCraftingPage()
+        {
+            if (Game1.activeClickableMenu != null && Game1.activeClickableMenu is CraftingPage)
+            {
+                var page = Game1.activeClickableMenu as CraftingPage;
+                if (menu is CraftingPage)
+                {
+                    return CraftingPage;
+                }
+            }
+
+            return null;
+        }
+
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
             if (!Context.IsWorldReady) return;
 
-            if (ReturnFridgeMenu() == null) return;
-            
-            if (ReturnFridgeMenu().GetType().FullName == "ExpandedFridge.ExpandedFridgeMenu")
-                handler.UpdateTransferredItemSprites();
+            if (ReturnCraftingPage() == null) return;
         }
 
         /// <summary>
@@ -201,7 +216,7 @@ namespace ChefHelperAddToFridges
             if (!Context.IsWorldReady) return;
             int x = (int)e.NewPosition.ScreenPixels.X;
             int y = (int)e.NewPosition.ScreenPixels.Y;
-            
+
             handler.TryHover(x, y);
         }
 
@@ -211,8 +226,8 @@ namespace ChefHelperAddToFridges
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (!Context.IsWorldReady) return;
-            var menu = ReturnFridgeMenu();
-            if (menu != null)
+            var page = ReturnCraftingPage();
+            if (page != null)
                 if (e.Button == SButton.MouseLeft || e.Button == SButton.ControllerA || e.Button == SButton.C)
                     handler.HandleClick(e.Cursor);
         }
@@ -224,15 +239,16 @@ namespace ChefHelperAddToFridges
         {
             if (!Context.IsWorldReady) return;
 
-            if (ReturnFridgeMenu() != null)
+            if (ReturnCraftingPage() != null)
             {
                 handler.currentLocation = Game1.player.currentLocation;
                 handler.DrawButton();
-                
-                if (!(ReturnFridgeMenu() is ItemGrabMenu)) {
+
+                if (!(ReturnFridgeMenu() is ItemGrabMenu))
+                {
                     handler.DrawTransferredItems(e.SpriteBatch);
                 }
-            } 
+            }
             else
             {
                 handler.currentLocation = null;
