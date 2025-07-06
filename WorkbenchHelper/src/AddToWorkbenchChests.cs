@@ -59,13 +59,13 @@ namespace WorkbenchHelper.AddToWorkbenchChests
             const int gapSize = 16;
 
             var screenX = menu.xPositionOnScreen + menu.width;
-            var screenY = menu.yPositionOnScreen + menu.height / 3 - (length * positionFromBottom) - (gapSize * (positionFromBottom - 1));
+            var screenY = menu.yPositionOnScreen + menu.height / 2 - (length * positionFromBottom) - (gapSize * (positionFromBottom - 1));
 
             button.bounds = new Rectangle(screenX, screenY, length, length);
         }
 
         /// <summary>
-        /// Checks to see if any other fridges in the area are in use.
+        /// Checks to see if any other chests around the workbench are in use.
         /// Only returns true if not.
         /// </summary>
         /// <returns></returns>
@@ -83,13 +83,13 @@ namespace WorkbenchHelper.AddToWorkbenchChests
         }
 
         /// <summary>
-        /// Draws button on top of the fridge menu GUI
+        /// Draws button on top of the workbench menu GUI
         /// </summary>
         public void DrawButton()
         {
             UpdatePos();
 
-            // If Fridges aren't free, we use a desaturated image to
+            // If chests aren't free, we use a desaturated image to
             // indicate the button is disabled.
             button.texture = IsWorkbenchWithChests() ? image : imageDisabled;
             button.draw(Game1.spriteBatch);
@@ -131,22 +131,21 @@ namespace WorkbenchHelper.AddToWorkbenchChests
         /// 
         /// Because the Expanded Fridge doesn't come with any support for
         /// FillOutStacks() (and thus has no support for transferred
-        /// item sprites/shakeItem), for now if the main fridge is
+        /// item sprites/shakeItem), for now if the main chest is
         /// accessed while Expanded Fridge is installed, the visual
         /// nuances will not display.
         /// </summary>
         /// <param name="chest"></param>
-        public void FillOutStacks(InventoryMenu inventory, Chest chest)
+        public void FillOutStacks(InventoryMenu inventory, IInventory chest)
         {
-            if (chest == null || chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID) == null)
+            if (chest == null || chest.Count == 0)
             {
                 modEntry.Monitor.Log("Chest is null or has no items for player.", LogLevel.Error);
                 return;
             }
             IList<Item> actualInventory = inventory.actualInventory;
-            IList<Item> actualInventory2 = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
             HashSet<int> hashSet = new HashSet<int>();
-            ILookup<string, Item> lookup = actualInventory2.Where((Item item5) => item5 != null).ToLookup((Item item5) => item5.QualifiedItemId);
+            ILookup<string, Item> lookup = chest.Where((Item item5) => item5 != null).ToLookup((Item item5) => item5.QualifiedItemId);
             if (lookup.Count == 0)
             {
                 return;
@@ -178,9 +177,9 @@ namespace WorkbenchHelper.AddToWorkbenchChests
                 Item item2 = item;
                 bool flag2 = false;
                 int num2 = -1;
-                for (int num3 = 0; num3 < actualInventory2.Count; num3++)
+                for (int num3 = 0; num3 < chest.Count; num3++)
                 {
-                    Item item3 = actualInventory2[num3];
+                    Item item3 = chest[num3];
                     if (item3 == null)
                     {
                         if (num2 == -1)
@@ -212,11 +211,10 @@ namespace WorkbenchHelper.AddToWorkbenchChests
 
                 if (item != null)
                 {
-                    var capacity = chest.GetActualCapacity();
-                    if (num2 == -1 && actualInventory2.Count < capacity)
+                    if (num2 == -1 && chest.HasEmptySlots())
                     {
-                        num2 = actualInventory2.Count;
-                        actualInventory2.Add(null);
+                        num2 = chest.Count;
+                        chest.Add(null);
                     }
 
                     if (num2 > -1)
@@ -224,26 +222,23 @@ namespace WorkbenchHelper.AddToWorkbenchChests
                         flag2 = true;
                         hashSet.Add(num2);
                         item.onDetachedFromParent();
-                        actualInventory2[num2] = item;
+                        chest[num2] = item;
                         actualInventory[num] = null;
                     }
                 }
 
-                if (flag2)
-                {
-                    TransferredItemSprite item_sprite = new TransferredItemSprite(item2.getOne(), inventory.inventory[num].bounds.X, inventory.inventory[num].bounds.Y);
-                    var transferredItemSprites = modEntry.helper.Reflection.GetField<List<TransferredItemSprite>>(inventory, "_transferredItemSprites").GetValue();
-                    transferredItemSprites.Add(item_sprite);
-                }
+                // if (flag2)
+                // {
+                //     TransferredItemSprite item_sprite = new TransferredItemSprite(item2.getOne(), inventory.inventory[num].bounds.X, inventory.inventory[num].bounds.Y);
+                //     var transferredItemSprites = modEntry.helper.Reflection.GetField<List<TransferredItemSprite>>(inventory, "_transferredItemSprites").GetValue();
+                //     transferredItemSprites.Add(item_sprite);
+                // }
             }
 
-            foreach (int item6 in hashSet)
-            {
-                inventory.ShakeItem(item6);
-            }
         }
         internal void UpdateTransferredItemSprites()
         {
+            var chest = new Chest();
             if (transferredItemSprites.Count > 0)
                 modEntry.Monitor.Log($"transferredItemSprites.Count: {transferredItemSprites.Count}");
             for (int i = 0; i < transferredItemSprites.Count; i++)
@@ -265,19 +260,20 @@ namespace WorkbenchHelper.AddToWorkbenchChests
         }
 
         /// <summary>
-        /// Using the FillOutStacks method, fills each fridge in the area.
+        /// Using the FillOutStacks method, fills each chest around the workbench.
         /// </summary>
         private void FillChests()
         {
-            // Fill main fridge first
+            // Fill main chest first
             var page = modEntry.ReturnCraftingPage();
             if (page != null && page._materialContainers.Count > 0)
             {
                 foreach (var container in page._materialContainers)
                 {
-                    if (container is Chest chest)
+                    if (container is Inventory)
                     {
-                        FillOutStacks(page.inventory, chest);
+                        string joined = string.Join(",", (container as Inventory).Select(i => i?.DisplayName ?? "null"));
+                        FillOutStacks(page.inventory, container);
                     }
                 }
             }
